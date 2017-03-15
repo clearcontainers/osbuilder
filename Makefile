@@ -33,7 +33,7 @@ DOCKER_RUN=docker run \
 			--privileged \
 			-v /dev:/dev \
 			$(RUN_PROXY) \
-			-ti \
+			-i \
 			-v $(WORKDIR):/osbuilder \
 			$(IMAGE_BUILDER)
 

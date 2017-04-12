@@ -53,7 +53,7 @@ build_rootfs()
 {
     mkdir -p "${ROOTFS_DIR}"
     DNF="dnf --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
-	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils systemd-bootchart
+	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils systemd-bootchart iptables-bin
 }
 
 build_kernel()

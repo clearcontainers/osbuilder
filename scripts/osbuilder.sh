@@ -17,7 +17,10 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 set -e
-set -x
+if [ -n "$DEBUG" ] ; then
+	set -x
+fi
+
 
 SCRIPT_NAME="${0##*/}"
 DNF_CONF="/etc/dnf/clear-dnf.conf"

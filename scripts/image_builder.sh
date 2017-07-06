@@ -20,7 +20,9 @@
 # on the rootfs directory.
 
 set -e
-set -x
+if [ -n "$DEBUG" ] ; then
+	set -x
+fi
 
 ROOTFS="$1"
 SCRIPT_NAME="${0##*/}"

@@ -69,9 +69,23 @@ $(WORKDIR):
 	mkdir -p $(WORKDIR)
 
 define check_program
-    type $1 >/dev/null 2>&1 || { echo "$1 is required  but it's not installed."; exit 1; }
-    echo $1 is installed
+    ( printf "check for $1..." && type $1 >/dev/null 2>&1 && echo "yes" ) || ( echo "no" && false )
+
 endef
+
+check-deps:
+ifdef USE_DOCKER
+	@$(call check_program,docker)
+else
+	@$(call check_program,dnf)
+	@$(call check_program,yum)
+	@$(call check_program,qemu-img)
+	@$(call check_program,parted)
+	@$(call check_program,gdisk)
+	@$(call check_program,make)
+	@$(call check_program,gcc)
+	@$(call check_program,bc)
+endif
 
 help:
 	@echo "Usage:"

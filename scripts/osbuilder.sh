@@ -21,6 +21,18 @@ set -x
 
 SCRIPT_NAME="${0##*/}"
 DNF_CONF="/etc/dnf/clear-dnf.conf"
+SCRIPT_DIR="$(dirname $(realpath -s $0))"
+
+if [ ! -f "${DNF_CONF}" ]; then
+	DNF_CONF="${SCRIPT_DIR}/clear-dnf.conf"
+fi
+
+
+IMAGE_BUILDER_SH="image_buidler.sh"
+if ! type ${IMAGE_BUILDER_SH} >/dev/null 2>&1; then
+	IMAGE_BUILDER_SH="${SCRIPT_DIR}/image_builder.sh"
+fi
+
 
 BUILD="$1"
 ROOTFS_DIR="$(pwd)/rootfs"
@@ -51,8 +63,8 @@ EOT
 
 build_rootfs()
 {
-    mkdir -p "${ROOTFS_DIR}"
-    DNF="dnf --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
+	mkdir -p "${ROOTFS_DIR}"
+	DNF="dnf --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
 	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils systemd-bootchart iptables-bin
 }
 
@@ -64,12 +76,21 @@ build_kernel()
 	cp linux/vmlinux vmlinux.container
 }
 
+check_root()
+{
+	if [ "$(id -u)" != "0" ]; then
+		echo "Root is needed"
+		exit 1
+	fi
+}
+
 # main
 [ -n "${BUILD}" ] || usage
 
 
 case "$BUILD" in
         rootfs)
+			check_root
 			build_rootfs
             ;;
          
@@ -78,7 +99,8 @@ case "$BUILD" in
             ;;
          
         image)
-			image_builder.sh "$(pwd)/rootfs"
+			check_root
+			$IMAGE_BUILDER_SH "$(pwd)/rootfs"
             ;;
         *)
 			usage

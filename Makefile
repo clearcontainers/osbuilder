@@ -14,6 +14,8 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+.PHONY: rootfs image kernel check-deps
+
 ifdef http_proxy
 BUILD_PROXY = --build-arg http_proxy=$(http_proxy)
 RUN_PROXY = --env http_proxy=$(http_proxy)
@@ -27,8 +29,13 @@ endif
 IMAGE_BUILDER = cc-osbuilder
 KERNEL_REPO = https://github.com/clearcontainers/linux.git
 WORKDIR ?= $(CURDIR)/workdir
+MK_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+OS_BUILDER ?= $(MK_DIR)/scripts/osbuilder.sh
 
-DOCKER_RUN=docker run \
+
+ifdef USE_DOCKER
+DOCKER_DEPS += docker-build
+OS_BUILDER = docker run \
 			--runtime runc \
 			--privileged \
 			-v /dev:/dev \
@@ -36,16 +43,16 @@ DOCKER_RUN=docker run \
 			-i \
 			-v $(WORKDIR):/osbuilder \
 			$(IMAGE_BUILDER)
+endif
+rootfs: $(WORKDIR) $(DOCKER_DEPS)
+	cd $(WORKDIR) && rm -rf "$(WORKDIR)/rootfs" && $(OS_BUILDER) rootfs
 
-rootfs: docker-build $(WORKDIR)
-	$(DOCKER_RUN) rootfs
 
+image: rootfs $(WORKDIR) $(DOCKER_DEPS)
+	cd $(WORKDIR) && $(OS_BUILDER) image
 
-image: docker-build rootfs $(WORKDIR)
-	$(DOCKER_RUN) image
-
-kernel: $(WORKDIR)/linux docker-build
-	$(DOCKER_RUN) kernel
+kernel: $(WORKDIR)/linux docker-build $(DOCKER_DEPS)
+	cd $(WORKDIR) && $(OS_BUILDER) kernel
 
 docker-build:
 	cd scripts; \
@@ -60,6 +67,11 @@ $(WORKDIR)/linux: $(WORKDIR)
 
 $(WORKDIR):
 	mkdir -p $(WORKDIR)
+
+define check_program
+    type $1 >/dev/null 2>&1 || { echo "$1 is required  but it's not installed."; exit 1; }
+    echo $1 is installed
+endef
 
 help:
 	@echo "Usage:"

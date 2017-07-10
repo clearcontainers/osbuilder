@@ -61,17 +61,29 @@ EOT
 	exit 1
 } 
 
+check_program(){
+	type "$1" >/dev/null 2>&1
+}
+
 build_rootfs()
 {
 	mkdir -p "${ROOTFS_DIR}"
-	DNF="dnf --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
+	if check_program "dnf"; then
+		DNF="dnf"
+	elif check_program "yum" ; then
+		DNF="yum"
+	else
+		die "neither yum nor dnf is installed"
+	fi
+	DNF="$DNF --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
 	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils systemd-bootchart iptables-bin
+	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 
 build_kernel()
 {
 	pushd linux
-	make -j$(nproc)
+	make -j"$(nproc)"
 	popd
 	cp linux/vmlinux vmlinux.container
 }

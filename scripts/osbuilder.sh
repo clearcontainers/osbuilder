@@ -83,7 +83,7 @@ build_rootfs()
 		die "neither yum nor dnf is installed"
 	fi
 	DNF="$DNF --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
-	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils systemd-bootchart iptables-bin
+	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils-bin systemd-bootchart iptables-bin
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 

@@ -24,6 +24,5 @@ WORKDIR ${workdir}
 
 COPY osbuilder.sh         /usr/bin
 COPY image_builder.sh     /usr/bin
-COPY clear-dnf.conf       /etc/dnf
 
 ENTRYPOINT ["/usr/bin/osbuilder.sh"]

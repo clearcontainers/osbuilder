@@ -67,6 +67,10 @@ check_program(){
 
 build_rootfs()
 {
+	if [ ! -f "${DNF_CONF}" ]; then
+		DNF_CONF="./clear-dnf.conf"
+		generate_dnf_config
+	fi
 	mkdir -p "${ROOTFS_DIR}"
 	if check_program "dnf"; then
 		DNF="dnf"

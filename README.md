@@ -59,6 +59,8 @@ workdir/vmlinux.container
 
 
 ```
+#Pull and setup latest kernel for Clear Containers
+sudo -E make kernel-src
 sudo -E make kernel
 ```
 

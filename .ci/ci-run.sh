@@ -1,4 +1,4 @@
-#
+#!/bin/bash
 #  Copyright (C) 2017 Intel Corporation
 #
 #  This program is free software; you can redistribute it and/or
@@ -15,15 +15,11 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-From fedora:25
 
-RUN dnf install -y qemu-img parted gdisk make gcc bc git
+script_dir=$(dirname $(readlink -f "$0"))
+source "${script_dir}/ci-common.sh"
 
-ENV workdir /osbuilder
-WORKDIR ${workdir}
-
-COPY osbuilder.sh         /usr/bin
-COPY image_builder.sh     /usr/bin
-COPY kernel_builder.sh    /usr/bin
-
-ENTRYPOINT ["/usr/bin/osbuilder.sh"]
+#Run clear-containers integration tests
+pushd "${test_repo_dir}"
+sudo -E PATH=$PATH make check
+popd

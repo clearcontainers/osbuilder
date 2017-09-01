@@ -14,6 +14,8 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+.PHONY: rootfs image kernel check-deps
+
 ifdef http_proxy
 BUILD_PROXY = --build-arg http_proxy=$(http_proxy)
 RUN_PROXY = --env http_proxy=$(http_proxy)
@@ -25,10 +27,14 @@ RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
 IMAGE_BUILDER = cc-osbuilder
-KERNEL_REPO = https://github.com/clearcontainers/linux.git
 WORKDIR ?= $(CURDIR)/workdir
+MK_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+OS_BUILDER ?= $(MK_DIR)/scripts/osbuilder.sh
 
-DOCKER_RUN=docker run \
+
+ifdef USE_DOCKER
+DOCKER_DEPS += docker-build
+OS_BUILDER = docker run \
 			--runtime runc \
 			--privileged \
 			-v /dev:/dev \
@@ -36,41 +42,74 @@ DOCKER_RUN=docker run \
 			-i \
 			-v $(WORKDIR):/osbuilder \
 			$(IMAGE_BUILDER)
+endif
+rootfs: $(WORKDIR) $(DOCKER_DEPS)
+	cd $(WORKDIR) && rm -rf "$(WORKDIR)/rootfs" && $(OS_BUILDER) rootfs
 
-rootfs: docker-build $(WORKDIR)
-	$(DOCKER_RUN) rootfs
 
+image: rootfs $(WORKDIR) $(DOCKER_DEPS)
+	cd $(WORKDIR) && $(OS_BUILDER) image
 
-image: docker-build rootfs $(WORKDIR)
-	$(DOCKER_RUN) image
+kernel: $(DOCKER_DEPS)
+	cd $(WORKDIR) && $(OS_BUILDER) kernel
 
-kernel: $(WORKDIR)/linux docker-build
-	$(DOCKER_RUN) kernel
+ifdef KERNEL_TAG
+KERNEL_TAG_OPT =-t $(KERNEL_TAG)
+endif
+
+ifdef KERNEL_REPO
+KERNEL_REPO_OPT =-k $(KERNEL_REPO)
+endif
+
+kernel-src: $(WORKDIR) $(DOCKER_DEPS)
+	cd $(WORKDIR) && $(OS_BUILDER)  $(KERNEL_TAG_OPT) $(KERNEL_REPO_OPT) kernel-src
 
 docker-build:
 	cd scripts; \
 	docker build $(BUILD_PROXY) -t $(IMAGE_BUILDER) . 
 
-$(WORKDIR)/linux: $(WORKDIR)
-	@echo Clone container kernel from $(KERNEL_REPO);\
-	cd $(WORKDIR); \
-	git clone --depth=1 $(KERNEL_REPO); \
-	cd linux; \
-	make clear_containers_defconfig;
 
 $(WORKDIR):
 	mkdir -p $(WORKDIR)
 
+define check_program
+    ( printf "check for $1..." && type $1 >/dev/null 2>&1 && echo "yes" ) || ( echo "no" && false )
+
+endef
+
+check-deps:
+ifdef USE_DOCKER
+	@$(call check_program,docker)
+else
+	@$(call check_program,dnf)
+	@$(call check_program,yum)
+	@$(call check_program,qemu-img)
+	@$(call check_program,parted)
+	@$(call check_program,gdisk)
+	@$(call check_program,make)
+	@$(call check_program,gcc)
+	@$(call check_program,bc)
+	@$(call check_program,git)
+endif
+
 help:
 	@echo "Usage:"
-	@echo "osbuilder Makefile provides three main targets:"
-	@echo "        rootfs, image and kernel"
+	@echo "osbuilder Makefile provides the targets:"
+	@echo "        rootfs, image, kernel-src and kernel"
+	@echo ""
+	@echo "ENV variables:"
+	@echo ""
+	@echo "- WORKDIR:"
 	@echo "All the targets will use a special working directory (WORKDIR)"
 	@echo "By default, the working directory is $(WORKDIR)"
 	@echo "but can be modified using the Makefile variable WORKDIR, use WORKDIR"
 	@echo "variable to set the new WORKDIR directory specifying the full path."
 	@echo "Example: "
 	@echo "         make TARGET WORKDIR=/tmp "
+	@echo ""
+	@echo "- REPO_URL"
+	@echo "use it to change the where rootfs base packages will be downloaded"
+	@echo ""
 	@echo "Targets:"
 	@echo ""
 	@echo "rootfs: generates the rootfs content for the Clear Containers image"
@@ -80,8 +119,10 @@ help:
 	@echo "image : generates a Clear Containers image using the content from"
 	@echo "        WORKDIR/rootfs, the image will be located in WORKDIR/container.img."
 	@echo ""
-	@echo "kernel: compiles the kernel source from the directory WORKDIR/linux and"
-	@echo "        copies the vmlinux image to WORKDIR/vmlinux.container. If the source "
-	@echo "        WORKDIR/linux does not exist, it will clone it from $(KERNEL_REPO)."
+	@echo "kernel-src: Download and setup the latest clear containers kernel source"
+	@echo "            in directory WORKDIR/linux. The kernel source will be used by"
+	@echo "            'kernel' target to build it."
+	@echo "kernel: compiles the kernel source from the directory WORKDIR/linux. To get"
+	@echo "        the latest kernel use 'make kernel-src'"
 
 

@@ -1,4 +1,4 @@
-#
+#!/bin/bash
 #  Copyright (C) 2017 Intel Corporation
 #
 #  This program is free software; you can redistribute it and/or
@@ -15,23 +15,31 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-[main]
-cachedir=/var/cache/dnf/clear/
-keepcache=0
-debuglevel=2
-logfile=/var/log/dnf.log
-exactarch=1
-obsoletes=1
-gpgcheck=0
-plugins=0
-installonly_limit=3
-#Dont use the default dnf reposdir
-#this will prevent to use host repositories
-reposdir=/root/mash
+set -e
+set -x
 
-[clear]
-name=Clear
-failovermethod=priority
-baseurl=https://download.clearlinux.org/current/x86_64/os/
-enabled=1
-gpgcheck=0
+script_dir=$(dirname $(readlink -f "$0"))
+source "${script_dir}/ci-common.sh"
+
+# Get Clear Containers test
+go get "${test_repo}"
+
+export USE_DOCKER=true
+# Build image
+sudo -E make rootfs
+sudo -E make image
+
+# Build kernel
+sudo -E make kernel-src
+sudo -E make kernel
+
+# Setup environment and build components .
+pushd "${test_repo_dir}"
+sudo -E PATH=$PATH bash .ci/setup.sh
+popd
+
+#Vefiry Clear Containers are working before install new image and kernel.
+docker run --rm -ti busybox echo "test" | grep "test"
+
+#Install new image
+sudo ln -sf "$(pwd)/workdir/container.img" /usr/share/clear-containers/clear-containers.img

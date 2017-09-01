@@ -20,7 +20,9 @@
 # on the rootfs directory.
 
 set -e
-set -x
+if [ -n "$DEBUG" ] ; then
+	set -x
+fi
 
 ROOTFS="$1"
 SCRIPT_NAME="${0##*/}"
@@ -49,7 +51,7 @@ exit 1
 # Image file to be created:
 IMAGE="container.img"
 # Image contents source folder
-IMG_SIZE=${IMG_SIZE:-100M}
+IMG_SIZE=${IMG_SIZE:-50M}
 BLOCK_SIZE=${BLOCK_SIZE:-4096}
 
 #Create image file
@@ -67,16 +69,16 @@ DEVICE=$(losetup -P -f --show ${IMAGE})
 #Refresh partition table
 partprobe ${DEVICE}
 
-mkdir -p /img
+mkdir -p ./img
 mkfs.ext4 -F -b "${BLOCK_SIZE}" "${DEVICE}p1"
-mount "${DEVICE}p1" /img
+mount "${DEVICE}p1" ./img
 
 # Copy content to image
-cp -a "${ROOTFS}"/* /img
+cp -a "${ROOTFS}"/* ./img
 
 sync
 # Cleanup
-umount -l /img
+umount -l ./img
 fsck -D -y "${DEVICE}p1"
 losetup -d "${DEVICE}"
 

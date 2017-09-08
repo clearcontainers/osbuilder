@@ -5,8 +5,8 @@ Clear Containers guest OS building scripts
 ## Build guest image ##
 
 ### Build a base rootfs ###
-The "rootfs" target will generate a directory
-called "workdir/rootfs".
+The `rootfs` target will generate a directory
+called `workdir/rootfs` overwriting duplicate files.
 
 ```
 sudo -E  make rootfs
@@ -18,25 +18,32 @@ customize it by adding anything you need to rootfs
 directory.
 
 ### Create Clear Container image ###
-The "image" target will take the "workload/rootfs" directory
+The `image` target will take the `workload/rootfs` directory
 and will generate a guest image named container.img in the workdir
-directory compatible with Clear Containers.
+directory compatible with Clear Containers. The `image` target will
+not create nor populate the `workdir/rootfs` directory.
+We recommend you use the `rootfs` target before using the `image` target.
+You can easily change the size of the image using the `IMG_SIZE` environment variable.
+See [Environment Variables](#Environment Variables)
 
 ```
 sudo -E make image
 ```
 
 ### Default packages ###
-By default, the rootfs for the Clear Containers image is based on
-Clear Linux for Intel\* Architecture, but WORKLOAD/rootfs could be
-populated with any other source.
-
-The required packages are:
+By default, the root file system for the Clear Containers image is based on
+Clear Linux for Intel\* Architecture, but the `workload/rootfs` directory can be
+populated with any other source. Next, packages are installed inside
+the generated image. You can install extra packages using the
+environment variable `EXTRA_PKGS`. See [Environment Variables](#Environment Variables).
 
 - [systemd]
 - [hyperstart]
-- cc-oci-runtime boot service [cc-agent service]
-- cc-oci-runtime boot target [cc-agent target]
+- [clear-containers-agent]
+- cc-oci-runtime-extras
+- coreutils-bin
+- systemd-bootchart
+- iptables-bin
 
 #### Clear Linux based packages security limitations  ####
 
@@ -52,8 +59,8 @@ https://download.clearlinux.org/current/.
 
 Clear Containers uses the Linux kernel, you can build a
 kernel compatible with Clear Containers using the make
-"kernel" target. This will clone the [Clear Container Kernel]
-if the directory "workdir/linux" does not exist, then will build it.
+`kernel` target. This will clone the [Clear Container Kernel]
+if the directory `workdir/linux` does not exist, then will build it.
 On success the new kernel will be located in
 workdir/vmlinux.container
 
@@ -140,12 +147,18 @@ sudo -E image
 Using `osbuilder` with ubuntu 14.06 fails because an old version of rpm. You can still use it
 exporting `USE_DOCKER` variable see [how to use docker](#Using-osbuilder-scripts-with-docker).
 
+
+## Environment Variables
+
+* `IMG_SIZE`: Image size. By default this value is 50M.
+* `EXTRA_PKGS`: The list of extra packages to install separated by spaces, for example "a b c". By default this values is empty.
+* `REPO_URL`: The repository URL. By default this value is "https://download.clearlinux.org/current/x86_64/os/"
+
+
 [systemd]: <https://www.freedesktop.org/wiki/Software/systemd/>
 
 [hyperstart]: <https://github.com/clearcontainers/hyperstart>
 
-[cc-agent target]: <https://github.com/01org/cc-oci-runtime/blob/master/data/cc-agent.target>
-
-[cc-agent service]: <https://github.com/01org/cc-oci-runtime/blob/master/data/cc-agent.service>
+[clear-containers-agent]: <https://github.com/clearcontainers/agent>
 
 [Clear Container Kernel]: <https://github.com/clearcontainers/linux>

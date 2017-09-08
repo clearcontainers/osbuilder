@@ -25,7 +25,7 @@ fi
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="$(dirname $(realpath -s $0))"
 REPO_URL=${REPO_URL:-https://download.clearlinux.org/current/x86_64/os/}
-
+EXTRA_PKGS=${EXTRA_PKGS:-""}
 
 
 IMAGE_BUILDER_SH="image_builder.sh"
@@ -116,7 +116,7 @@ build_rootfs()
 	fi
 	DNF="$DNF --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
 	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils-bin \
-		systemd-bootchart iptables-bin clear-containers-agent
+		systemd-bootchart iptables-bin clear-containers-agent ${EXTRA_PKGS}
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 

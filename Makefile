@@ -26,6 +26,8 @@ BUILD_PROXY += --build-arg https_proxy=$(https_proxy)
 RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
+RUN_EXTRA_PKGS = --env EXTRA_PKGS=$(EXTRA_PKGS)
+
 IMAGE_BUILDER = cc-osbuilder
 WORKDIR ?= $(CURDIR)/workdir
 MK_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -39,15 +41,15 @@ OS_BUILDER = docker run \
 			--privileged \
 			-v /dev:/dev \
 			$(RUN_PROXY) \
+			$(RUN_EXTRA_PKGS) \
 			-i \
 			-v $(WORKDIR):/osbuilder \
 			$(IMAGE_BUILDER)
 endif
 rootfs: $(WORKDIR) $(DOCKER_DEPS)
-	cd $(WORKDIR) && rm -rf "$(WORKDIR)/rootfs" && $(OS_BUILDER) rootfs
+	cd $(WORKDIR) && $(OS_BUILDER) rootfs
 
-
-image: rootfs $(WORKDIR) $(DOCKER_DEPS)
+image: $(WORKDIR) $(DOCKER_DEPS)
 	cd $(WORKDIR) && $(OS_BUILDER) image
 
 kernel: $(DOCKER_DEPS)
@@ -68,6 +70,8 @@ docker-build:
 	cd scripts; \
 	docker build $(BUILD_PROXY) -t $(IMAGE_BUILDER) . 
 
+clean:
+	rm -rf "$(WORKDIR)/rootfs" "$(WORKDIR)/linux" "$(WORKDIR)/img"
 
 $(WORKDIR):
 	mkdir -p $(WORKDIR)
@@ -124,5 +128,6 @@ help:
 	@echo "            'kernel' target to build it."
 	@echo "kernel: compiles the kernel source from the directory WORKDIR/linux. To get"
 	@echo "        the latest kernel use 'make kernel-src'"
+	@echo "clean: removes the directory WORKDIR"
 
 

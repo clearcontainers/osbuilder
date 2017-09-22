@@ -51,7 +51,7 @@ exit 1
 # Image file to be created:
 IMAGE="container.img"
 # Image contents source folder
-IMG_SIZE=${IMG_SIZE:-50M}
+IMG_SIZE=${IMG_SIZE:-80M}
 BLOCK_SIZE=${BLOCK_SIZE:-4096}
 
 #Create image file

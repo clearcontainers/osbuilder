@@ -243,7 +243,7 @@ However, it is still possible to [run the scripts using docker](#Using-osbuilder
 ## Environment Variables
 
 * `EXTRA_PKGS`: The list of extra packages to install separated by spaces, for example "`a b c`". By default this values is empty.
-* `IMG_SIZE`: Image size. By default this value is `50M`.
+* `IMG_SIZE`: Image size. By default this value is `80M`.
 * `REPO_URL`: The repository URL. By default this value is `https://download.clearlinux.org/current/x86_64/os/`.
 * `USE_DOCKER`: If set, perform all build steps inside a docker container.
 * `WORKDIR`: Specify an alternative directory under which files will be generated (default `./workdir`).

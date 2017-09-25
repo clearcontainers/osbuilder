@@ -81,13 +81,13 @@ Packages are installed inside the generated image. You can install extra
 packages using the environment variable `EXTRA_PKGS`.
 See [Environment Variables](#Environment Variables).
 
-- [systemd]
-- [hyperstart]
-- [clear-containers-agent]
 - cc-oci-runtime-extras
+- [clear-containers-agent]
 - coreutils-bin
-- systemd-bootchart
+- [hyperstart]
 - iptables-bin
+- [systemd]
+- systemd-bootchart
 
 ##### Clear Linux based packages security limitations
 

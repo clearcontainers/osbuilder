@@ -35,7 +35,7 @@ This repository contains scripts to create a custom
 The scripts in this repository are called by running `make(1)` specifying
 particular targets. The scripts use a work directory for storing all files. By
 deafult this will be created automatically as `./workdir` however this can be
-changed by setting the `WORKDIR` environment variable. See [Environment Variables](#Environment Variables).
+changed by setting the `WORKDIR` environment variable. See [Environment Variables](#environment-variables).
 
 ## Building a guest image
 
@@ -65,7 +65,7 @@ The `image` target will not create or populate the `workdir/rootfs` directory
 so it is necessary to [build a rootfs](#build-a-rootfs) first.
 
 Use the `IMG_SIZE` environment variable to change the size of the image if
-desired. See [Environment Variables](#Environment Variables).
+desired. See [Environment Variables](#environment-variables).
 
 ```
 $ sudo -E make image
@@ -79,7 +79,7 @@ populated with any other source.
 
 Packages are installed inside the generated image. You can install extra
 packages using the environment variable `EXTRA_PKGS`.
-See [Environment Variables](#Environment Variables).
+See [Environment Variables](#environment-variables).
 
 - `cc-agent`
 - cc-oci-runtime-extras
@@ -135,9 +135,7 @@ This section covers using the new resources with `cc-runtime`.
 1. Update the runtime configuration for the image
    ```
    $ # (note that this is only an example using default paths).
-   $ sudo sed -i.bak -e 's!^\(image = ".*"\)!# \1 \
-   image = "/usr/share/clear-containers/container.img"!g' \
-   /usr/share/defaults/clear-containers/configuration.toml
+   $ sudo sed -i.bak -e 's!^\(image = ".*"\)!# \1 image = "/usr/share/clear-containers/container.img"!g' /usr/share/defaults/clear-containers/configuration.toml
    ```
 
 #### Installing the new kernel
@@ -145,14 +143,12 @@ This section covers using the new resources with `cc-runtime`.
 1. Install the kernel image
    ```
    $ sudo install --owner root --group root --mode 0755 workdir/vmlinuz.container /usr/share/clear-containers/custom-vmlinuz
-￼  $ sudo install --owner root --group root --mode 0755 workdir/vmlinux.container /usr/share/clear-containers/custom-vmlinux
+   $ sudo install --owner root --group root --mode 0755 workdir/vmlinux.container /usr/share/clear-containers/custom-vmlinux
    ```
 
 1. Update the runtime configuration for the kernel
-
    ```
-   $ sudo sed -i.bak -e 's!^\(kernel = ".*"\)!# \1\nkernel = "/usr/share/clear-containers/custom-vmlinuz"!g' \
-       /usr/share/defaults/clear-containers/configuration.toml
+   $ sudo sed -i.bak -e 's!^\(kernel = ".*"\)!# \1\nkernel = "/usr/share/clear-containers/custom-vmlinuz"!g' /usr/share/defaults/clear-containers/configuration.toml
    ```
 
 ### Clear Containers 2.x
@@ -160,14 +156,12 @@ This section covers using the new resources with `cc-runtime`.
 This section covers using the new resources with `cc-oci-runtime`.
 
 1. Copy the defaults file:
-
    ```
    $ sudo mkdir -p /etc/cc-oci-runtime
    $ sudo cp /usr/share/defaults/cc-oci-runtime/vm.json /etc/cc-oci-runtime/vm.json
    ```
 
 1. Modify the paths for your new kernel and image:
-
    ```
    {
        "vm": {

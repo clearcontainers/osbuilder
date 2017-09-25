@@ -1,41 +1,85 @@
-# osbuilder
+# osbuilder - Clear Containers guest O/S building scripts
 
-Clear Containers guest OS building scripts
+* [Overview](#overview)
+* [Introduction](#introduction)
+* [Building a guest image](#building-a-guest-image)
+    * [Build a rootfs](#build-a-rootfs)
+      * [(optional) Customise the rootfs](#(optional)-customise-the-rootfs)
+      * [Create a rootfs image](#create-a-rootfs-image)
+      * [Default packages](#default-packages)
+        * [Clear Linux based packages security limitations](#clear-linux-based-packages-security-limitations)
+* [Build guest kernel](#build-guest-kernel)
+* [Using the newly generated custom rootfs and kernel images](#using-the-newly-generated-custom-rootfs-and-kernel-images)
+    * [Clear Containers 3.x](#clear-containers-3.x)
+        * [Installing the custom roots image](#installing-the-custom-roots-image)
+        * [Installing the new kernel](#installing-the-new-kernel)
+    * [Clear Containers 2.x](#clear-containers-2.x)
+* [Dependencies](#dependencies)
+* [Using osbuilder scripts with Docker*](#using-osbuilder-scripts-with-docker)
+* [Limitations](#limitations)
+* [Environment Variables](#environment-variables)
 
-## Build guest image ##
 
-### Build a base rootfs ###
-The `rootfs` target will generate a directory
-called `workdir/rootfs` overwriting duplicate files.
+## Overview
+
+The Clear Containers hypervisor creates a virtual machine (VM) in which to run
+the workload. To do this, the hypervisor requires a root filesystem (rootfs) image
+and a guest kernel image in order to create the guest environment in
+which the container runs.
+
+This repository contains scripts to create a custom
+[root filesystem image](https://github.com/clearcontainers/runtime/blob/master/docs/architecture/architecture.md#root-filesystem-image) ("rootfs") and [guest kernel image](https://github.com/clearcontainers/runtime/blob/master/docs/architecture/architecture.md#guest-kernel). These custom resources may be used for testing and developing new features.
+
+## Introduction
+
+The scripts in this repository are called by running `make(1)` specifying
+particular targets. The scripts use a work directory for storing all files. By
+deafult this will be created automatically as `./workdir` however this can be
+changed by setting the `WORKDIR` environment variable. See [Environment Variables](#Environment Variables).
+
+## Building a guest image
+
+A guest image is a rootfs that has been converted into a disk image.
+
+### Build a rootfs
+
+The `rootfs` target will generate a directory called `workdir/rootfs`,
+overwriting duplicate files:
 
 ```
-sudo -E  make rootfs
+$ sudo -E  make rootfs
 ```
 
-### (optional) customize clear container rootfs ###
-After generate a initial rootfs (previous step) you can 
-customize it by adding anything you need to rootfs 
-directory.
+#### (optional) Customise the rootfs
 
-### Create Clear Container image ###
-The `image` target will take the `workload/rootfs` directory
-and will generate a guest image named container.img in the workdir
-directory compatible with Clear Containers. The `image` target will
-not create nor populate the `workdir/rootfs` directory.
-We recommend you use the `rootfs` target before using the `image` target.
-You can easily change the size of the image using the `IMG_SIZE` environment variable.
-See [Environment Variables](#Environment Variables)
+It is possible to customise the rootfs; simply modify the files below
+`workdir/rootfs` as desired.
+
+#### Create a rootfs image
+
+The `image` target will create a disk image called `container.img` from the `workload/rootfs` directory. This image file is compatible with the official Clear Containers images provided with a Clear Containers installation.
+
+Note:
+
+The `image` target will not create or populate the `workdir/rootfs` directory
+so it is necessary to [build a rootfs](#build-a-rootfs) first.
+
+Use the `IMG_SIZE` environment variable to change the size of the image if
+desired. See [Environment Variables](#Environment Variables).
 
 ```
-sudo -E make image
+$ sudo -E make image
 ```
 
-### Default packages ###
-By default, the root file system for the Clear Containers image is based on
-Clear Linux for Intel\* Architecture, but the `workload/rootfs` directory can be
-populated with any other source. Next, packages are installed inside
-the generated image. You can install extra packages using the
-environment variable `EXTRA_PKGS`. See [Environment Variables](#Environment Variables).
+#### Default packages
+
+By default, the rootfs image is based on
+[Clear Linux for Intel\* Architecture](https://clearlinux.org), but the `workdir/rootfs` directory can be
+populated with any other source.
+
+Packages are installed inside the generated image. You can install extra
+packages using the environment variable `EXTRA_PKGS`.
+See [Environment Variables](#Environment Variables).
 
 - [systemd]
 - [hyperstart]
@@ -45,115 +89,169 @@ environment variable `EXTRA_PKGS`. See [Environment Variables](#Environment Vari
 - systemd-bootchart
 - iptables-bin
 
-#### Clear Linux based packages security limitations  ####
+##### Clear Linux based packages security limitations
 
-Clear Linux is not an rpm-based Linux distribution and
-the rpm packages are not signed, so there is no way
-to ensure that downloaded packages are trustworthy.
+Although the Clear Linux rootfs is constructed from `rpm` packages, Clear
+Linux itself is not an `rpm`-based Linux distribution (the software installed
+on a Clear Linux system is not managed using `rpm`).
 
-If you are willing to use Clear Linux based images, we encourage you
-to use the Clear Containers images provided from its website
-https://download.clearlinux.org/current/.
+The `rpm` packages used to generate the rootfs are not signed, so there is no
+way to ensure that downloaded packages are trustworthy.
 
-## Build guest kernel ##
+If you are willing to use Clear Linux based images, official Clear Containers
+rootfs images can be obtained from https://download.clearlinux.org/releases.
 
-Clear Containers uses the Linux kernel, you can build a
-kernel compatible with Clear Containers using the make
-`kernel` target. This will clone the [Clear Container Kernel]
-if the directory `workdir/linux` does not exist, then will build it.
-On success the new kernel will be located in
-workdir/vmlinux.container
+## Build guest kernel
 
+Clear Containers uses the [Linux* kernel](https://www.kernel.org).
 
-```
-#Pull and setup latest kernel for Clear Containers
-sudo -E make kernel-src
-sudo -E make kernel
-```
+To build a kernel compatible with Clear Containers using the make `kernel` target. This
+will clone the [Clear Container Kernel] in the `workdir/linux` directory
+(which will be created if necessary). On success two new kernel images will be created:
+  - `workdir/vmlinuz.container` (compressed kernel image)
+  - `workdir/vmlinux.container` (uncompressed kernel image)
 
-## Use new generated kernel and image with cc-oci-runtime ##
-
-To use the new generated kernel or image copy the defaults file:
 
 ```
-sudo mkdir -p /etc/cc-oci-runtime
-sudo cp /usr/share/defaults/cc-oci-runtime/vm.json /etc/cc-oci-runtime/vm.json
+$ # Pull and setup latest kernel for Clear Containers
+$ sudo -E make kernel-src
+$ sudo -E make kernel
 ```
 
-And modify the paths for your new kernel and image:
+## Using the newly generated custom rootfs and kernel images
+
+### Clear Containers 3.x
+
+This section covers using the new resources with `cc-runtime`.
+
+#### Installing the custom roots image
+
+1. Install the image file
+   ```
+   $ sudo install --owner root --group root --mode 0755 workdir/container.img /usr/share/clear-containers/
+   ```
+
+1. Update the runtime configuration for the image
+   ```
+   $ # (note that this is only an example using default paths).
+   $ sudo sed -i.bak -e 's!^\(image = ".*"\)!# \1 \
+   image = "/usr/share/clear-containers/container.img"!g' \
+   /usr/share/defaults/clear-containers/configuration.toml
+   ```
+
+#### Installing the new kernel
+
+1. Install the kernel image
+   ```
+   $ sudo install --owner root --group root --mode 0755 workdir/vmlinuz.container /usr/share/clear-containers/custom-vmlinuz
+￼  $ sudo install --owner root --group root --mode 0755 workdir/vmlinux.container /usr/share/clear-containers/custom-vmlinux
+   ```
+
+1. Update the runtime configuration for the kernel
+
+   ```
+   $ sudo sed -i.bak -e 's!^\(kernel = ".*"\)!# \1\nkernel = "/usr/share/clear-containers/custom-vmlinuz"!g' \
+       /usr/share/defaults/clear-containers/configuration.toml
+   ```
+
+### Clear Containers 2.x
+
+This section covers using the new resources with `cc-oci-runtime`.
+
+1. Copy the defaults file:
+
+   ```
+   $ sudo mkdir -p /etc/cc-oci-runtime
+   $ sudo cp /usr/share/defaults/cc-oci-runtime/vm.json /etc/cc-oci-runtime/vm.json
+   ```
+
+1. Modify the paths for your new kernel and image:
+
+   ```
+   {
+       "vm": {
+           "path": "QEMU PATH...",
+           "image": "FULL IMAGE NAME ",
+           "kernel": {
+               "path": "FULL KERNEL NAME",
+               "parameters": "CMDLINE .."
+           }
+       }
+   }
+   ```
+
+## Dependencies
+
+In order to work the osbuilder scripts require the following programs:
+
+- `bc`
+- `dnf` or `yum`
+- `gcc`
+- `gdisk`
+- `git`
+- `make`
+- `parted`
+- `qemu-img`
+
+To check if these tools are available locally, run:
 
 ```
-{
-	"vm": {
-		"path": "QEMU PATH...",
-		"image": "FULL IMAGE NAME ",
-		"kernel": {
-			"path": "FULL KERNEL NAME",
-			"parameters": "CMDLINE .."
-		}
-	}
-}
+$ make check-deps
 ```
 
-## Requirements
+## Using osbuilder scripts with Docker*
 
-### Dependencies
-In order to work `osbuilder` scripts require the following programs:
-
-- dnf or yum
-- qemu-img
-- parted
-- gdisk
-- make
-- gcc
-- bc
-- git
-
-### Using osbuilder scripts with docker
-
-If you don't want to install all the dependencies in your system to run
-osbuilder scripts you can also run them in docker. To run osbuilder scripts
-inside a docker container the following requirements must be met:
+If you do not want to install all the dependencies on your system to run
+the osbuilder scripts, you can instead run them under Docker. To run the
+osbuilder scripts inside a Docker container the following requirements must be
+met:
 
 1. Docker 1.12+ installed
-2. `runc` is configured as default runtime
+ 
+2. `runc` is configured as the default runtime
 
- You can check if `runc` is the default runtime running:
+   To check if `runc` is the default runtime:
 
- ```
- docker info | grep 'Default Runtime: runc'
- ```
+   ```
+   $ docker info | grep 'Default Runtime: runc'
+   ```
 
-3. Export USE_DOCKER variable
+   Note
 
-```
-export USE_DOCKER=true
-```
+   This requirement is specifically for `docker build` which does not work
+   with a hypervisor-based runtime currently (see issue
+   [\#8](https://github.com/clearcontainers/osbuilder/issues/8)
+   for more information.
 
+3. Export `USE_DOCKER` variable
+
+   ```
+   $ export USE_DOCKER=true
+   ```
 4. Use osbuilder makefile targets as described in [Build guest image](#Build-guest-image)
 
-Example:
-```
-export USE_DOCKER=true
-#Download Clear Containers guest base rootfs
-sudo -E make rootfs
-#Build an image with the conent generated by 'make rootfs'
-sudo -E image
-```
-
+   Example:
+   ```
+   $ export USE_DOCKER=true
+   $ # Download Clear Containers guest base rootfs
+   $ sudo -E make rootfs
+   $ # Build an image with the conent generated by 'make rootfs'
+   $ sudo -E image
+   ```
 
 ## Limitations
 
-Using `osbuilder` with ubuntu 14.06 fails because an old version of rpm. You can still use it
-exporting `USE_DOCKER` variable see [how to use docker](#Using-osbuilder-scripts-with-docker).
+Using `osbuilder` with ubuntu 14.06 fails because an old version of `rpm`.
+However, it is still possible to [run the scripts using docker](#Using-osbuilder-scripts-with-docker).
 
 
 ## Environment Variables
 
-* `IMG_SIZE`: Image size. By default this value is 50M.
-* `EXTRA_PKGS`: The list of extra packages to install separated by spaces, for example "a b c". By default this values is empty.
-* `REPO_URL`: The repository URL. By default this value is "https://download.clearlinux.org/current/x86_64/os/"
-
+* `EXTRA_PKGS`: The list of extra packages to install separated by spaces, for example "`a b c`". By default this values is empty.
+* `IMG_SIZE`: Image size. By default this value is `50M`.
+* `REPO_URL`: The repository URL. By default this value is `https://download.clearlinux.org/current/x86_64/os/`.
+* `USE_DOCKER`: If set, perform all build steps inside a docker container.
+* `WORKDIR`: Specify an alternative directory under which files will be generated (default `./workdir`).
 
 [systemd]: <https://www.freedesktop.org/wiki/Software/systemd/>
 

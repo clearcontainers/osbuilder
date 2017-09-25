@@ -35,7 +35,7 @@ This repository contains scripts to create a custom
 The scripts in this repository are called by running `make(1)` specifying
 particular targets. The scripts use a work directory for storing all files. By
 deafult this will be created automatically as `./workdir` however this can be
-changed by setting the `WORKDIR` environment variable. See [Environment Variables](#Environment Variables).
+changed by setting the `WORKDIR` environment variable. See [Environment Variables](#environment-variables).
 
 ## Building a guest image
 
@@ -65,7 +65,7 @@ The `image` target will not create or populate the `workdir/rootfs` directory
 so it is necessary to [build a rootfs](#build-a-rootfs) first.
 
 Use the `IMG_SIZE` environment variable to change the size of the image if
-desired. See [Environment Variables](#Environment Variables).
+desired. See [Environment Variables](#environment-variables).
 
 ```
 $ sudo -E make image
@@ -79,7 +79,7 @@ populated with any other source.
 
 Packages are installed inside the generated image. You can install extra
 packages using the environment variable `EXTRA_PKGS`.
-See [Environment Variables](#Environment Variables).
+See [Environment Variables](#environment-variables).
 
 - [systemd]
 - [hyperstart]

@@ -81,6 +81,7 @@ Packages are installed inside the generated image. You can install extra
 packages using the environment variable `EXTRA_PKGS`.
 See [Environment Variables](#Environment Variables).
 
+- `cc-agent`
 - cc-oci-runtime-extras
 - [clear-containers-agent]
 - coreutils-bin

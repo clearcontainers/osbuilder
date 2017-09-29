@@ -140,15 +140,14 @@ This section covers using the new resources with `cc-runtime`.
 
 #### Installing the new kernel
 
-1. Install the kernel image
+1. Install the kernel image (run `make help` for more information)
    ```
-   $ sudo install --owner root --group root --mode 0755 workdir/vmlinuz.container /usr/share/clear-containers/custom-vmlinuz
-   $ sudo install --owner root --group root --mode 0755 workdir/vmlinux.container /usr/share/clear-containers/custom-vmlinux
+   $ sudo make install-kernel
    ```
 
-1. Update the runtime configuration for the kernel
+1. Verify kernel is configured
    ```
-   $ sudo sed -i.bak -e 's!^\(kernel = ".*"\)!# \1\nkernel = "/usr/share/clear-containers/custom-vmlinuz"!g' /usr/share/defaults/clear-containers/configuration.toml
+   $ cc-runtime cc-env
    ```
 
 ### Clear Containers 2.x

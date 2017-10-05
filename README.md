@@ -13,7 +13,6 @@
     * [Clear Containers 3.x](#clear-containers-3.x)
         * [Installing the custom roots image](#installing-the-custom-roots-image)
         * [Installing the new kernel](#installing-the-new-kernel)
-    * [Clear Containers 2.x](#clear-containers-2.x)
 * [Dependencies](#dependencies)
 * [Using osbuilder scripts with Docker*](#using-osbuilder-scripts-with-docker)
 * [Limitations](#limitations)
@@ -148,30 +147,6 @@ This section covers using the new resources with `cc-runtime`.
 1. Verify kernel is configured
    ```
    $ cc-runtime cc-env
-   ```
-
-### Clear Containers 2.x
-
-This section covers using the new resources with `cc-oci-runtime`.
-
-1. Copy the defaults file:
-   ```
-   $ sudo mkdir -p /etc/cc-oci-runtime
-   $ sudo cp /usr/share/defaults/cc-oci-runtime/vm.json /etc/cc-oci-runtime/vm.json
-   ```
-
-1. Modify the paths for your new kernel and image:
-   ```
-   {
-       "vm": {
-           "path": "QEMU PATH...",
-           "image": "FULL IMAGE NAME ",
-           "kernel": {
-               "path": "FULL KERNEL NAME",
-               "parameters": "CMDLINE .."
-           }
-       }
-   }
    ```
 
 ## Dependencies

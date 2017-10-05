@@ -120,8 +120,14 @@ build_rootfs()
 	info "Using : ${PKG_MANAGER} to pull packages from ${REPO_URL}"
 
 	DNF="${PKG_MANAGER} --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
-	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils-bin \
-		systemd-bootchart iptables-bin clear-containers-agent ${EXTRA_PKGS}
+	$DNF install \
+		${EXTRA_PKGS} \
+		systemd \
+		coreutils-bin \
+		systemd-bootchart \
+		iptables-bin \
+		clear-containers-agent
+
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 

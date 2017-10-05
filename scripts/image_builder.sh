@@ -34,6 +34,11 @@ die()
 	exit 1
 }
 
+info()
+{
+	echo -e "\e[1mINFO\e[0m: $*"
+}
+
 usage()
 {
 	cat <<EOT
@@ -54,6 +59,7 @@ IMAGE="container.img"
 IMG_SIZE=${IMG_SIZE:-80M}
 BLOCK_SIZE=${BLOCK_SIZE:-4096}
 
+info "Creating raw disk with size ${IMG_SIZE}"
 #Create image file
 qemu-img create -f raw "${IMAGE}" "${IMG_SIZE}"
 

@@ -26,10 +26,10 @@ BUILD_PROXY += --build-arg https_proxy=$(https_proxy)
 RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
-RUN_EXTRA_PKGS = --env EXTRA_PKGS=$(EXTRA_PKGS)
-RUN_IMG_SIZE = --env IMG_SIZE=$(IMG_SIZE)
-RUN_REPO_URL = --env REPO_URL=$(REPO_URL)
-RUN_DEBUG= --env DEBUG=$(DEBUG)
+RUN_EXTRA_PKGS = --env EXTRA_PKGS="$(EXTRA_PKGS)"
+RUN_IMG_SIZE = --env IMG_SIZE="$(IMG_SIZE)"
+RUN_REPO_URL = --env REPO_URL="$(REPO_URL)"
+RUN_DEBUG = --env DEBUG="$(DEBUG)"
 
 IMAGE_BUILDER = cc-osbuilder
 WORKDIR ?= $(CURDIR)/workdir

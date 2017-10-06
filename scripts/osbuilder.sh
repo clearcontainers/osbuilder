@@ -107,16 +107,27 @@ build_rootfs()
 		generate_dnf_config
 	fi
 	mkdir -p "${ROOTFS_DIR}"
-	if check_program "dnf"; then
-		DNF="dnf"
+	if [ -n "${PKG_MANAGER}" ]; then
+		info "DNF path provided by user: ${PKG_MANAGER}"
+	elif check_program "dnf"; then
+		PKG_MANAGER="dnf"
 	elif check_program "yum" ; then
-		DNF="yum"
+		PKG_MANAGER="yum"
 	else
 		die "neither yum nor dnf is installed"
 	fi
-	DNF="$DNF --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
-	$DNF install systemd hyperstart cc-oci-runtime-extras coreutils-bin \
-		systemd-bootchart iptables-bin clear-containers-agent ${EXTRA_PKGS}
+
+	info "Using : ${PKG_MANAGER} to pull packages from ${REPO_URL}"
+
+	DNF="${PKG_MANAGER} --config=$DNF_CONF -y --installroot=${ROOTFS_DIR} --noplugins"
+	$DNF install \
+		${EXTRA_PKGS} \
+		systemd \
+		coreutils-bin \
+		systemd-bootchart \
+		iptables-bin \
+		clear-containers-agent
+
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 

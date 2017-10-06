@@ -13,7 +13,6 @@
     * [Clear Containers 3.x](#clear-containers-3.x)
         * [Installing the custom roots image](#installing-the-custom-roots-image)
         * [Installing the new kernel](#installing-the-new-kernel)
-    * [Clear Containers 2.x](#clear-containers-2.x)
 * [Dependencies](#dependencies)
 * [Using osbuilder scripts with Docker*](#using-osbuilder-scripts-with-docker)
 * [Limitations](#limitations)
@@ -150,30 +149,6 @@ This section covers using the new resources with `cc-runtime`.
    $ cc-runtime cc-env
    ```
 
-### Clear Containers 2.x
-
-This section covers using the new resources with `cc-oci-runtime`.
-
-1. Copy the defaults file:
-   ```
-   $ sudo mkdir -p /etc/cc-oci-runtime
-   $ sudo cp /usr/share/defaults/cc-oci-runtime/vm.json /etc/cc-oci-runtime/vm.json
-   ```
-
-1. Modify the paths for your new kernel and image:
-   ```
-   {
-       "vm": {
-           "path": "QEMU PATH...",
-           "image": "FULL IMAGE NAME ",
-           "kernel": {
-               "path": "FULL KERNEL NAME",
-               "parameters": "CMDLINE .."
-           }
-       }
-   }
-   ```
-
 ## Dependencies
 
 In order to work the osbuilder scripts require the following programs:
@@ -241,11 +216,8 @@ However, it is still possible to [run the scripts using docker](#Using-osbuilder
 
 ## Environment Variables
 
-* `EXTRA_PKGS`: The list of extra packages to install separated by spaces, for example "`a b c`". By default this values is empty.
-* `IMG_SIZE`: Image size. By default this value is `80M`.
-* `REPO_URL`: The repository URL. By default this value is `https://download.clearlinux.org/current/x86_64/os/`.
-* `USE_DOCKER`: If set, perform all build steps inside a docker container.
-* `WORKDIR`: Specify an alternative directory under which files will be generated (default `./workdir`).
+Run `make help` to see a list of supported environment variables that can be
+used to change the tools behaviour.
 
 [systemd]: <https://www.freedesktop.org/wiki/Software/systemd/>
 

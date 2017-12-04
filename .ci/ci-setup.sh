@@ -39,7 +39,9 @@ sudo -E PATH=$PATH bash .ci/setup.sh
 popd
 
 #Vefiry Clear Containers are working before install new image and kernel.
-docker run --rm -ti busybox echo "test" | grep "test"
+docker run --rm -i busybox echo "test" | grep "test"
 
 #Install new image
 sudo ln -sf "$(pwd)/workdir/container.img" /usr/share/clear-containers/clear-containers.img
+
+cc-runtime  cc-env

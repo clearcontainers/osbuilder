@@ -126,7 +126,8 @@ build_rootfs()
 		coreutils-bin \
 		systemd-bootchart \
 		iptables-bin \
-		clear-containers-agent
+		clear-containers-agent \
+		procps-ng-bin
 
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }

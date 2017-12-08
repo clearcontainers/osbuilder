@@ -128,14 +128,9 @@ This section covers using the new resources with `cc-runtime`.
 
 1. Install the image file
    ```
-   $ sudo install --owner root --group root --mode 0755 workdir/container.img /usr/share/clear-containers/
+   $ sudo make install-image
    ```
 
-1. Update the runtime configuration for the image
-   ```
-   $ # (note that this is only an example using default paths).
-   $ sudo sed -i.bak -e 's!^\(image = ".*"\)!# \1 image = "/usr/share/clear-containers/container.img"!g' /usr/share/defaults/clear-containers/configuration.toml
-   ```
 
 #### Installing the new kernel
 

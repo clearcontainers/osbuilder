@@ -15,9 +15,9 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-From fedora:25
+From fedora:27
 
-RUN dnf install -y qemu-img parted gdisk make gcc bc git
+RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs
 
 ENV workdir /osbuilder
 WORKDIR ${workdir}

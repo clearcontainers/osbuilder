@@ -134,7 +134,6 @@ build_rootfs()
 		${EXTRA_PKGS} \
 		systemd \
 		coreutils-bin \
-		systemd-bootchart \
 		iptables-bin \
 		procps-ng-bin
 

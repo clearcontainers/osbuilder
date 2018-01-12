@@ -27,10 +27,13 @@ RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
 RUN_OS_VERSION= --env OS_VERSION="$(OS_VERSION)"
+RUN_AGENT_VERSION= --env AGENT_VERSION="$(AGENT_VERSION)"
 RUN_EXTRA_PKGS = --env EXTRA_PKGS="$(EXTRA_PKGS)"
 RUN_IMG_SIZE = --env IMG_SIZE="$(IMG_SIZE)"
 RUN_REPO_URL = --env REPO_URL="$(REPO_URL)"
 RUN_DEBUG = --env DEBUG="$(DEBUG)"
+CONTAINER_GOPATH = /go_path
+RUN_GOPATH += --env GOPATH="$(CONTAINER_GOPATH)"
 
 IMAGE_BUILDER = cc-osbuilder
 WORKDIR ?= $(CURDIR)/workdir
@@ -71,13 +74,16 @@ OS_BUILDER = docker run \
 			-v /dev:/dev \
 			$(RUN_PROXY) \
 			$(RUN_OS_VERSION) \
+			$(RUN_AGENT_VERSION) \
 			$(RUN_EXTRA_PKGS) \
 			$(RUN_IMG_SIZE) \
 			$(RUN_REPO_URL) \
+			$(RUN_GOPATH) \
 			$(RUN_DEBUG) \
 			-i \
 			-v $(MK_DIR):/osbuilder \
 			-v $(WORKDIR):/workdir \
+			-v $(GOPATH):$(CONTAINER_GOPATH)\
 			$(IMAGE_BUILDER) \
 			/osbuilder/scripts/osbuilder.sh
 endif
@@ -206,6 +212,9 @@ install-image:
 
 Environment Variables:
 
+- AGENT_VERSION:
+	Agent tag/commit/branch to install when building rootfs.
+
 - DEBUG
 
 - EXTRA_PKGS:
@@ -215,6 +224,9 @@ Environment Variables:
 - IMG_SIZE
 	Change the image size of the image to generate (accepts any value
 	recognised by qemu-img(1)).
+
+- OS_VERSION:
+	Clear Linux version to use as base rootfs.
 
 - PKG_MANAGER
 	Specify the path to dnf or yum.

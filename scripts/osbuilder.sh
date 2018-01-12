@@ -27,13 +27,14 @@ SCRIPT_DIR="$(dirname $(realpath -s $0))"
 source "${SCRIPT_DIR}/config.txt"
 # This is defined in config.txt
 OS_VERSION=${OS_VERSION}
-VESIONS_FILE="https://raw.githubusercontent.com/clearcontainers/runtime/master/versions.txt"
+VERSIONS_FILE="https://raw.githubusercontent.com/clearcontainers/runtime/master/versions.txt"
 
 if [ -z "${OS_VERSION}" ]; then
-	OS_VERSION="$(curl -Ls "${VESIONS_FILE}" | grep '^clear_vm_image_version=' | cut -d= -f 2)"
+	OS_VERSION="$(curl -Ls ${VERSIONS_FILE} | grep '^clear_vm_image_version=' | cut -d= -f 2)"
 fi
 
 REPO_URL=${REPO_URL:-https://download.clearlinux.org/releases/${OS_VERSION}/clear/x86_64/os/}
+AGENT_REPOSITORY="github.com/clearcontainers/agent"
 
 
 IMAGE_BUILDER_SH="image_builder.sh"
@@ -135,14 +136,31 @@ build_rootfs()
 		coreutils-bin \
 		systemd-bootchart \
 		iptables-bin \
-		clear-containers-agent \
 		procps-ng-bin
 
-	cat >> ${IMAGE_INFO_FILE} << EOT
+	cat > ${IMAGE_INFO_FILE} << EOT
 [packages]
 $(rpm -qa --root="${ROOTFS_DIR}")
 EOT
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
+}
+
+install_agent()
+{
+	go get ${AGENT_REPOSITORY}
+	pushd "${GOPATH}/src/${AGENT_REPOSITORY}"
+	git fetch origin
+	git checkout ${AGENT_VERSION}
+	git pull || true
+	make
+	make install DESTDIR="${ROOTFS_DIR}"
+
+	cat >> ${IMAGE_INFO_FILE} << EOT
+
+[agent]
+version=$(git log --pretty=format:'%h' -n 1)
+EOT
+	popd
 }
 
 
@@ -174,6 +192,7 @@ case "$BUILD" in
         rootfs)
 			check_root
 			build_rootfs
+			install_agent
             ;;
 
         kernel-src)

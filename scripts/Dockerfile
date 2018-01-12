@@ -17,7 +17,7 @@
 
 From fedora:27
 
-RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs
+RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs go libudev-devel
 
 ENV workdir /workdir
 WORKDIR ${workdir}

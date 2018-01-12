@@ -47,6 +47,7 @@ if ! type ${KERNEL_BUILDER_SH} >/dev/null 2>&1; then
 fi
 
 ROOTFS_DIR="$(pwd)/rootfs"
+IMAGE_INFO_FILE="$(pwd)/image_info"
 
 die()
 {
@@ -137,6 +138,10 @@ build_rootfs()
 		clear-containers-agent \
 		procps-ng-bin
 
+	cat >> ${IMAGE_INFO_FILE} << EOT
+[packages]
+$(rpm -qa --root="${ROOTFS_DIR}")
+EOT
 	[ -n "${ROOTFS_DIR}" ]  && rm -r "${ROOTFS_DIR}/var/cache/dnf"
 }
 

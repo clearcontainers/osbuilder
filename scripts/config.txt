@@ -1,0 +1,3 @@
+# Agent version/commit/tag to use.
+
+AGENT_VERSION=${AGENT_VERSION:-master}

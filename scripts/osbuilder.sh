@@ -24,8 +24,16 @@ fi
 
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="$(dirname $(realpath -s $0))"
-REPO_URL=${REPO_URL:-https://download.clearlinux.org/current/x86_64/os/}
-EXTRA_PKGS=${EXTRA_PKGS:-""}
+source "${SCRIPT_DIR}/config.txt"
+# This is defined in config.txt
+OS_VERSION=${OS_VERSION}
+VESIONS_FILE="https://raw.githubusercontent.com/clearcontainers/runtime/master/versions.txt"
+
+if [ -z "${OS_VERSION}" ]; then
+	OS_VERSION="$(curl -Ls "${VESIONS_FILE}" | grep '^clear_vm_image_version=' | cut -d= -f 2)"
+fi
+
+REPO_URL=${REPO_URL:-https://download.clearlinux.org/releases/${OS_VERSION}/clear/x86_64/os/}
 
 
 IMAGE_BUILDER_SH="image_builder.sh"

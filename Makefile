@@ -26,6 +26,7 @@ BUILD_PROXY += --build-arg https_proxy=$(https_proxy)
 RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
+RUN_OS_VERSION= --env OS_VERSION="$(OS_VERSION)"
 RUN_EXTRA_PKGS = --env EXTRA_PKGS="$(EXTRA_PKGS)"
 RUN_IMG_SIZE = --env IMG_SIZE="$(IMG_SIZE)"
 RUN_REPO_URL = --env REPO_URL="$(REPO_URL)"
@@ -69,13 +70,16 @@ OS_BUILDER = docker run \
 			--privileged \
 			-v /dev:/dev \
 			$(RUN_PROXY) \
+			$(RUN_OS_VERSION) \
 			$(RUN_EXTRA_PKGS) \
 			$(RUN_IMG_SIZE) \
 			$(RUN_REPO_URL) \
 			$(RUN_DEBUG) \
 			-i \
-			-v $(WORKDIR):/osbuilder \
-			$(IMAGE_BUILDER)
+			-v $(MK_DIR):/osbuilder \
+			-v $(WORKDIR):/workdir \
+			$(IMAGE_BUILDER) \
+			/osbuilder/scripts/osbuilder.sh
 endif
 rootfs: $(WORKDIR) $(DOCKER_DEPS)
 	cd $(WORKDIR) && $(OS_BUILDER) rootfs
@@ -102,7 +106,10 @@ docker-build:
 	docker build $(BUILD_PROXY) -t $(IMAGE_BUILDER) . 
 
 clean:
-	rm -rf "$(WORKDIR)/rootfs" "$(WORKDIR)/linux" "$(WORKDIR)/img"
+	sudo rm -rf "$(WORKDIR)/rootfs"
+	rm -rf "$(WORKDIR)/linux"
+	rm -rf "$(WORKDIR)/img"
+	rm -f $(WORKDIR)/clear-dnf.conf  $(WORKDIR)/container.img
 
 $(WORKDIR):
 	mkdir -p $(WORKDIR)

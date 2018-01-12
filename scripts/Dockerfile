@@ -19,11 +19,5 @@ From fedora:27
 
 RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs
 
-ENV workdir /osbuilder
+ENV workdir /workdir
 WORKDIR ${workdir}
-
-COPY osbuilder.sh         /usr/bin
-COPY image_builder.sh     /usr/bin
-COPY kernel_builder.sh    /usr/bin
-
-ENTRYPOINT ["/usr/bin/osbuilder.sh"]

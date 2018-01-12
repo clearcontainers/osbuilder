@@ -135,6 +135,7 @@ build_rootfs()
 		systemd \
 		coreutils-bin \
 		iptables-bin \
+		clr-power-tweaks \
 		procps-ng-bin
 
 	cat > ${IMAGE_INFO_FILE} << EOT

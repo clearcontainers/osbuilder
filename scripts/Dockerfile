@@ -17,7 +17,14 @@
 
 From fedora:27
 
-RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs go libudev-devel
+RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs libudev-devel pkgconfig
+
+ARG GO_VERSION
+
+RUN cd /tmp && curl -OL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+RUN tar -C /usr/ -xzf /tmp/go${GO_VERSION}.linux-amd64.tar.gz
+ENV GOROOT=/usr/go
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 ENV workdir /workdir
 WORKDIR ${workdir}

@@ -39,7 +39,10 @@ IMAGE_BUILDER = cc-osbuilder
 WORKDIR ?= $(CURDIR)/workdir
 MK_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS_BUILDER ?= $(MK_DIR)/scripts/osbuilder.sh
-
+RUNTIME_VERSIONS = "https://raw.githubusercontent.com/clearcontainers/runtime/master/versions.txt"
+#get go_version=<version>
+GO_VERSION = $(shell curl -sL $(RUNTIME_VERSIONS) | grep '^go_version=' | cut -d= -f2)
+BUILD_GO_VERSION+= --build-arg GO_VERSION=$(GO_VERSION)
 
 # Installation variables
 DESTDIR :=
@@ -109,7 +112,7 @@ kernel-src: $(WORKDIR) $(DOCKER_DEPS)
 
 docker-build:
 	cd scripts; \
-	docker build $(BUILD_PROXY) -t $(IMAGE_BUILDER) . 
+	docker build $(BUILD_PROXY) $(BUILD_GO_VERSION) -t $(IMAGE_BUILDER) .
 
 clean:
 	sudo rm -rf "$(WORKDIR)/rootfs"

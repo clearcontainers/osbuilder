@@ -26,16 +26,23 @@ BUILD_PROXY += --build-arg https_proxy=$(https_proxy)
 RUN_PROXY += --env https_proxy=$(https_proxy)
 endif
 
+RUN_OS_VERSION= --env OS_VERSION="$(OS_VERSION)"
+RUN_AGENT_VERSION= --env AGENT_VERSION="$(AGENT_VERSION)"
 RUN_EXTRA_PKGS = --env EXTRA_PKGS="$(EXTRA_PKGS)"
 RUN_IMG_SIZE = --env IMG_SIZE="$(IMG_SIZE)"
 RUN_REPO_URL = --env REPO_URL="$(REPO_URL)"
 RUN_DEBUG = --env DEBUG="$(DEBUG)"
+CONTAINER_GOPATH = /go_path
+RUN_GOPATH += --env GOPATH="$(CONTAINER_GOPATH)"
 
 IMAGE_BUILDER = cc-osbuilder
 WORKDIR ?= $(CURDIR)/workdir
 MK_DIR :=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 OS_BUILDER ?= $(MK_DIR)/scripts/osbuilder.sh
-
+RUNTIME_VERSIONS = "https://raw.githubusercontent.com/clearcontainers/runtime/master/versions.txt"
+#get go_version=<version>
+GO_VERSION = $(shell curl -sL $(RUNTIME_VERSIONS) | grep '^go_version=' | cut -d= -f2)
+BUILD_GO_VERSION+= --build-arg GO_VERSION=$(GO_VERSION)
 
 # Installation variables
 DESTDIR :=
@@ -69,13 +76,19 @@ OS_BUILDER = docker run \
 			--privileged \
 			-v /dev:/dev \
 			$(RUN_PROXY) \
+			$(RUN_OS_VERSION) \
+			$(RUN_AGENT_VERSION) \
 			$(RUN_EXTRA_PKGS) \
 			$(RUN_IMG_SIZE) \
 			$(RUN_REPO_URL) \
+			$(RUN_GOPATH) \
 			$(RUN_DEBUG) \
 			-i \
-			-v $(WORKDIR):/osbuilder \
-			$(IMAGE_BUILDER)
+			-v $(MK_DIR):/osbuilder \
+			-v $(WORKDIR):/workdir \
+			-v $(GOPATH):$(CONTAINER_GOPATH)\
+			$(IMAGE_BUILDER) \
+			/osbuilder/scripts/osbuilder.sh
 endif
 rootfs: $(WORKDIR) $(DOCKER_DEPS)
 	cd $(WORKDIR) && $(OS_BUILDER) rootfs
@@ -99,10 +112,13 @@ kernel-src: $(WORKDIR) $(DOCKER_DEPS)
 
 docker-build:
 	cd scripts; \
-	docker build $(BUILD_PROXY) -t $(IMAGE_BUILDER) . 
+	docker build $(BUILD_PROXY) $(BUILD_GO_VERSION) -t $(IMAGE_BUILDER) .
 
 clean:
-	rm -rf "$(WORKDIR)/rootfs" "$(WORKDIR)/linux" "$(WORKDIR)/img"
+	sudo rm -rf "$(WORKDIR)/rootfs"
+	rm -rf "$(WORKDIR)/linux"
+	rm -rf "$(WORKDIR)/img"
+	rm -f $(WORKDIR)/clear-dnf.conf  $(WORKDIR)/container.img
 
 $(WORKDIR):
 	mkdir -p $(WORKDIR)
@@ -199,6 +215,9 @@ install-image:
 
 Environment Variables:
 
+- AGENT_VERSION:
+	Agent tag/commit/branch to install when building rootfs.
+
 - DEBUG
 
 - EXTRA_PKGS:
@@ -208,6 +227,9 @@ Environment Variables:
 - IMG_SIZE
 	Change the image size of the image to generate (accepts any value
 	recognised by qemu-img(1)).
+
+- OS_VERSION:
+	Clear Linux version to use as base rootfs.
 
 - PKG_MANAGER
 	Specify the path to dnf or yum.

@@ -17,13 +17,14 @@
 
 From fedora:27
 
-RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs
+RUN dnf install -y qemu-img parted gdisk make gcc bc git e2fsprogs libudev-devel pkgconfig
 
-ENV workdir /osbuilder
+ARG GO_VERSION
+
+RUN cd /tmp && curl -OL https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
+RUN tar -C /usr/ -xzf /tmp/go${GO_VERSION}.linux-amd64.tar.gz
+ENV GOROOT=/usr/go
+ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
+ENV workdir /workdir
 WORKDIR ${workdir}
-
-COPY osbuilder.sh         /usr/bin
-COPY image_builder.sh     /usr/bin
-COPY kernel_builder.sh    /usr/bin
-
-ENTRYPOINT ["/usr/bin/osbuilder.sh"]

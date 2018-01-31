@@ -39,6 +39,11 @@ info()
 	echo -e "\e[1mINFO\e[0m: $*"
 }
 
+warning()
+{
+	echo -e "\e[93mWARNING\e[0m: $*"
+}
+
 usage()
 {
 	cat <<EOT
@@ -53,15 +58,23 @@ exit 1
 [ "$(id -u)" -eq 0 ] || die "$0: must be run as root"
 [ -d "${ROOTFS}" ] || die "${ROOTFS} is not a directory"
 
+# In order to support memory hotplug, image must be aligned to 128M
+MEM_BOUNDARY=128
 # Image file to be created:
 IMAGE="container.img"
 # Image contents source folder
-IMG_SIZE=${IMG_SIZE:-80M}
+IMG_SIZE=${IMG_SIZE:-$MEM_BOUNDARY}
 BLOCK_SIZE=${BLOCK_SIZE:-4096}
 
-info "Creating raw disk with size ${IMG_SIZE}"
+remaining=$(echo "$IMG_SIZE % $MEM_BOUNDARY" | bc)
+if [ "$remaining" != "0" ];then
+	 warning "image size '$IMG_SIZE' is not aligned to memory boundary '$MEM_BOUNDARY', aligning it"
+	IMG_SIZE="$((IMG_SIZE + MEM_BOUNDARY - remaining))"
+fi
+
+info "Creating raw disk with size ${IMG_SIZE}M"
 #Create image file
-qemu-img create -f raw "${IMAGE}" "${IMG_SIZE}"
+qemu-img create -f raw "${IMAGE}" "${IMG_SIZE}M"
 
 # Only one partition is required for the image
 #Create partition table

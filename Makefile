@@ -225,8 +225,10 @@ Environment Variables:
 	"a b c". By default this values is empty.
 
 - IMG_SIZE
-	Change the image size of the image to generate (accepts any value
-	recognised by qemu-img(1)).
+	Specify the image size in megabytes. In order to support memory hot plug, this
+	value must be aligned to 128 (defined by PAGE_SECTION_MASK in the Linux Kernel),
+	otherwise memory will not be plugged by the guest Linux Kernel, If this value
+	is not aligned, osbuilder will align it. By default this value is 128.
 
 - OS_VERSION:
 	Clear Linux version to use as base rootfs.

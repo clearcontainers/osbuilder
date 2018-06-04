@@ -33,7 +33,7 @@ This repository contains scripts to create a custom
 
 The scripts in this repository are called by running `make(1)` specifying
 particular targets. The scripts use a work directory for storing all files. By
-deafult this will be created automatically as `./workdir` however this can be
+default this will be created automatically as `./workdir` however this can be
 changed by setting the `WORKDIR` environment variable. See [Environment Variables](#environment-variables).
 
 ## Building a guest image
@@ -205,7 +205,7 @@ met:
 
 ## Limitations
 
-Using `osbuilder` with ubuntu 14.06 fails because an old version of `rpm`.
+Using `osbuilder` with ubuntu 14.06 fails because of an old version of `rpm`.
 However, it is still possible to [run the scripts using docker](#Using-osbuilder-scripts-with-docker).
 
 
